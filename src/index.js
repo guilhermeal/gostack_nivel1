@@ -7,7 +7,20 @@ app.use(express.json());
 
 const projects = [];
 
-app.get('/projects', (request, response) => {
+function logRequest(request, response, next) {
+  const {method, url } = request;
+
+  const logLabel = `[${method.toUpperCase()}] ${url}`;
+
+  console.log(logLabel);
+
+  return next(); // Próximo middleware
+}
+
+// a chamada do middleware só deve acontecer nesse ponto, se for preciso executar em todas as rotas
+// app.use(logRequest);
+
+app.get('/projects', logRequest, (request, response) => {
 
   const { title } = request.query;
 
