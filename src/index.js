@@ -1,26 +1,42 @@
 const express = require('express');
 const { response } = require('express');
-const { uuid } = require('uuidv4');
+const { uuid, isUuid } = require('uuidv4');
 
 const app = express();
 app.use(express.json());
 
 const projects = [];
 
+//Middleware: logRequest
 function logRequest(request, response, next) {
   const {method, url } = request;
 
-  const logLabel = `[${method.toUpperCase()}] ${url}`;
+  const logLabel = `[${method.toUpperCase()}] ${url}`;  
+  
+  console.time(logLabel);
+  
+  next(); // Próximo middleware
 
-  console.log(logLabel);
+  console.timeEnd(logLabel);
 
-  return next(); // Próximo middleware
+}
+
+//Middleware: validaProjectId
+function validaProjectId(request, response, next) {
+  const { id } = request.params;
+
+  if(!isUuid(id)) {
+    return response.status(400).json({ error: 'Invalid project ID.' });
+  }
+
+  return next();
 }
 
 // a chamada do middleware só deve acontecer nesse ponto, se for preciso executar em todas as rotas
-// app.use(logRequest);
+app.use(logRequest);
+app.use('/projects/:id', validaProjectId);
 
-app.get('/projects', logRequest, (request, response) => {
+app.get('/projects', (request, response) => {
 
   const { title } = request.query;
 
